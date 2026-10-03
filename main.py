@@ -1,6 +1,7 @@
 from llm import get_llm
 from langchain_core.messages import AIMessage , HumanMessage , SystemMessage
 from pydantic import BaseModel, Field
+from langchain_core.prompts import ChatPromptTemplate 
 class Response(BaseModel):
     """an answer to the user question alog with justification """
     answer : str = Field(... , description="the answer to the user question")
@@ -36,6 +37,30 @@ def token_stream():
             print(token.content, end="", flush=True)
 
         print()
+
+def using_LCEL():
+    prompt = ChatPromptTemplate.from_messages([
+        {
+            "role": "system" , "content" : "you are a helpful assistant that responds to questions",
+
+        },
+        {
+            "role": "human" , "content" : "{question}"
+        }
+    ])
+
+    model = get_llm(temperature=0.6, max_tokens=512)
+    chain = prompt | model
+    while True:
+        user  = input("ask question: ")
+        if user.lower() == "exit":
+            break
+        for token in chain.stream({"question": user}):
+            print(token.content, end="", flush=True)
+        print()
+
+
 if __name__ == "__main__":
     #talk()
-    token_stream()
+    #token_stream()
+    using_LCEL()
